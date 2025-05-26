@@ -10,6 +10,10 @@ from services.room import room_service
 
 router = APIRouter()
 
+@router.get("/")
+async def root():
+    return {"message": "Hello World"}
+
 
 @router.post("/rooms")
 async def create_room_endpoint(request: Request, db: Session = Depends(get_db)):
