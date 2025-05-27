@@ -1,14 +1,20 @@
-from typing import Any, Dict, List
+import os
+import subprocess
+import threading
+import time
+import uuid
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from database import get_db
 from schemas.room import RoomSchema
-from services.ai import get_ai_move
 from services.room import room_service
 
 router = APIRouter()
+
 
 @router.get("/")
 async def root():
@@ -81,33 +87,95 @@ async def delete_room_endpoint(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/ai/move")
-async def get_ai_move_endpoint(request: Request) -> Dict[str, Any]:
-    try:
-        data = await request.json()
-        board = data.get("board")
-        current_player = data.get("current_player")
-        game_rules = data.get(
-            "game_rules", {"exactlyFiveRule": True, "noBlockedWinsRule": False}
+# ------------- Experiment - AI ------------- #
+
+
+_ai_games = {}
+_ai_games_lock = threading.Lock()
+INACTIVITY_TIMEOUT = 600  # 10 minutes
+
+
+def _cleanup_inactive_games():
+    while True:
+        time.sleep(60)
+        now = time.time()
+        with _ai_games_lock:
+            to_remove = []
+            for game_id, info in _ai_games.items():
+                if now - info["last_active"] > INACTIVITY_TIMEOUT:
+                    proc = info["proc"]
+                    proc.kill()
+                    proc.wait()
+                    to_remove.append(game_id)
+            for gid in to_remove:
+                print(f"Cleaned up inactive game: {gid}")
+                del _ai_games[gid]
+
+
+cleanup_thread = threading.Thread(target=_cleanup_inactive_games, daemon=True)
+cleanup_thread.start()
+
+
+class AIMoveRequest(BaseModel):
+    game_id: Optional[str] = None
+    command: str
+
+
+class AIMoveResponse(BaseModel):
+    game_id: str
+    move: str
+
+
+@router.post("/ai/move", response_model=AIMoveResponse)
+async def get_ai_move_endpoint(request: AIMoveRequest) -> AIMoveResponse:
+    command = request.command
+    game_id = request.game_id
+    print(f"command: {command}, game_id: {game_id}")
+
+    if not command:
+        raise HTTPException(status_code=400, detail="Missing 'command' field")
+
+    if not game_id:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        proc = subprocess.Popen(
+            [os.path.join(current_dir, "gomoku_ai.exe")],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1,
         )
-
-        if not board or current_player is None:
-            raise HTTPException(status_code=400, detail="Missing required fields")
-
-        # Get AI move
-        move = get_ai_move(
-            board=board,
-            current_player=current_player,
-            game_rules=game_rules,
-        )
-
-        return {
-            "move": {
-                "row": move.row,
-                "col": move.col,
+        lock = threading.Lock()
+        game_id = str(uuid.uuid4())
+        with _ai_games_lock:
+            _ai_games[game_id] = {
+                "proc": proc,
+                "lock": lock,
+                "last_active": time.time(),
             }
-        }
+    else:
+        with _ai_games_lock:
+            if game_id not in _ai_games:
+                raise HTTPException(status_code=404, detail="Game ID not found")
+            proc_info = _ai_games[game_id]
+            proc = proc_info["proc"]
+            lock = proc_info["lock"]
+            proc_info["last_active"] = time.time()
 
-    except Exception as e:
-        print(f"Error in get_ai_move_endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+    with lock:
+        try:
+            if proc.stdin:
+                proc.stdin.write(command + "\n")
+                proc.stdin.flush()
+            while True:
+                if proc.stdout:
+                    response = proc.stdout.readline().strip()
+                    if not response or response.startswith("MESSAGE"):
+                        continue
+                    break
+        except Exception as e:
+            raise HTTPException(
+                status_code=500, detail=f"AI process communication error: {e}"
+            )
+
+    return AIMoveResponse(game_id=game_id, move=response)
