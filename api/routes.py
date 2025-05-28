@@ -138,7 +138,7 @@ async def get_ai_move_endpoint(request: AIMoveRequest) -> AIMoveResponse:
     if not game_id:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         proc = subprocess.Popen(
-            [os.path.join(current_dir, "gomoku_ai.exe")],
+            [os.path.join(current_dir, "gomoku_ai")],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
