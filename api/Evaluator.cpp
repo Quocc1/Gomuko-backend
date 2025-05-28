@@ -2,7 +2,9 @@
 #include "MoveDatabase.cpp"
 #include <sstream>
 #include <iomanip>
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include <algorithm>
 using std::reverse;
 
@@ -810,7 +812,7 @@ Pos Evaluator::databaseMove() {
 				y1 = s[2 * i + 1];
 				if (i == len1) {
 					std::uniform_int_distribution<> dis(0, len2 - 1);
-					s += 2 * (len1 + dis(random));
+					s += 2 * (len1 + dis(rng));
 					x1 = *s++;
 					y1 = *s;
 				}

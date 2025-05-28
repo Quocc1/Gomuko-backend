@@ -39,7 +39,7 @@ Pos AI::turnMove() {
             Pos b;
             std::uniform_int_distribution<> dis(-1, 1);
             do {
-                b = POS((CoordX(p)) + dis(random), CoordY(p) + dis(random));
+                b = POS((CoordX(p)) + dis(rng), CoordY(p) + dis(rng));
             } while (!board->isEmpty(b));
             return b;
         } else if (board->isNearBoard(p, 1)) {
