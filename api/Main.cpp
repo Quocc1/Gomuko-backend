@@ -224,7 +224,7 @@ int main(int argc, char* argv[]) {
 		char path[MAX_PATH];
 		for (int i = 1; i < argc; i++)
 			if (strncmp(argv[i], "config=", 7) == 0) {
-				sscanf_s(argv[i], "config=%s", &path, MAX_PATH);
+				sscanf(argv[i], "config=%s", &path, MAX_PATH);
 				configPath = path;
 				customConfigPath = true;
 				break;

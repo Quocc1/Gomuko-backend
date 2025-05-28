@@ -1039,7 +1039,7 @@ void AI::tryReadConfig(string path) {
 
     int override;
     file.getline(line, LineSize);
-    sscanf_s(line, "Override:%d", &override);
+    sscanf(line, "Override:%d", &override);
     if (override != 1) {
         file.close();
         return;
@@ -1059,31 +1059,31 @@ void AI::tryReadConfig(string path) {
             override++;
         } else if (strncmp(line, "ExtensionCoefficient:", 21) == 0) {
             int ExtensionNumBase;
-            sscanf_s(line, "ExtensionCoefficient:%d", &ExtensionNumBase);
+            sscanf(line, "ExtensionCoefficient:%d", &ExtensionNumBase);
             depthReductionBase = ExtensionNumBase <= 1 ? 1e6f : 1.f / logf((float)ExtensionNumBase);
             override++;
         } else if (strncmp(line, "UseOpeningBook:", 15) == 0) {
             int opening;
-            sscanf_s(line, "UseOpeningBook:%d", &opening);
+            sscanf(line, "UseOpeningBook:%d", &opening);
             useOpeningBook = opening == 1;
             override++;
         } else if (strncmp(line, "FutilityPurningMargin:", 22) == 0) {
-            FutilityDepth = sscanf_s(line, "FutilityPurningMargin:%d%d%d%d", FutilityMargin, FutilityMargin + 1, FutilityMargin + 2, FutilityMargin + 3);
+            FutilityDepth = sscanf(line, "FutilityPurningMargin:%d%d%d%d", FutilityMargin, FutilityMargin + 1, FutilityMargin + 2, FutilityMargin + 3);
             if (FutilityDepth > FUTILITY_MAX_DEPTH) FutilityDepth = FUTILITY_MAX_DEPTH;
             override++;
         } else if (strncmp(line, "RazoringMargin:", 15) == 0) {
-            sscanf_s(line, "RazoringMargin:%d%d%d%d", RazoringMargin, RazoringMargin + 1, RazoringMargin + 2, RazoringMargin + 3);
+            sscanf(line, "RazoringMargin:%d%d%d%d", RazoringMargin, RazoringMargin + 1, RazoringMargin + 2, RazoringMargin + 3);
             if (RazoringDepth > RAZORING_MAX_DEPTH) RazoringDepth = RAZORING_MAX_DEPTH;
             override++;
         } else if (strncmp(line, "IIDMinDepth:", 12) == 0) {
-            sscanf_s(line, "IIDMinDepth:%d", &IIDMinDepth);
+            sscanf(line, "IIDMinDepth:%d", &IIDMinDepth);
             override++;
         } else if (strncmp(line, "SEBetaMargin:", 13) == 0) {
-            sscanf_s(line, "SEBetaMargin:%f", &SEBetaMargin);
+            sscanf(line, "SEBetaMargin:%f", &SEBetaMargin);
             override++;
         } else if (strncmp(line, "ReloadConfigOnEachMove:", 23) == 0) {
             int reload;
-            sscanf_s(line, "ReloadConfigOnEachMove:%d", &reload);
+            sscanf(line, "ReloadConfigOnEachMove:%d", &reload);
             reloadConfig = reload == 1;
             override++;
         }

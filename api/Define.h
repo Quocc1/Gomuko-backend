@@ -20,6 +20,7 @@
 #include <random>
 #include <ctime>
 #include <iostream>
+#include <climits>
 
 using std::string;
 using std::vector;
@@ -57,7 +58,7 @@ inline auto _abs(const T a) {
 #define MIN(a,b) _min(a,b)
 #define ABS(a) _abs(a)
 
-static std::mt19937_64 random(time(NULL));
+static std::mt19937_64 rng(time(NULL));
 
 inline void toupper(string & str) {
 	for (size_t i = 0; i < str.size(); i++) {
@@ -68,7 +69,7 @@ inline void toupper(string & str) {
 	}
 }
 
-// 返回当前时间(单位:ms)
+// 锟斤拷锟截碉拷前时锟斤拷(锟斤拷位:ms)
 inline long getTime() {
 	return clock() * 1000L / CLOCKS_PER_SEC;
 }

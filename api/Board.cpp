@@ -20,10 +20,10 @@ Board::~Board() {
 
 void Board::initZobrish() {
 	for (int i = 0; i < MaxBoardSizeSqr; i++)
-		zobrist[0][i] = random();
+		zobrist[0][i] = rng();
 	for (int i = 0; i < MaxBoardSizeSqr; i++)
-		zobrist[1][i] = random();
-	zobristKey = random();
+		zobrist[1][i] = rng();
+	zobristKey = rng();
 }
 
 void Board::initBoard() {

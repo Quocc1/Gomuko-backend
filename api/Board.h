@@ -1,5 +1,6 @@
 #pragma once
 #include "Define.h"
+#include <climits>
 
 #define MAX_BOARD_SIZE_BIT 5
 #define BOARD_BOUNDARY 4
