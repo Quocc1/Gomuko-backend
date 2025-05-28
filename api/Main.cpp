@@ -1,39 +1,61 @@
 #include "Search.h"
 #include <sstream>
+#include <string>
+#include <iostream>
+#include <cstring>  // for strncmp, strcpy
+#include <cstdio>   // for sscanf
+
 #ifdef _WIN32
-#include <windows.h>
+    #include <windows.h>
+#else
+    #include <unistd.h>
+    #include <limits.h>
+    #ifndef MAX_PATH
+        #define MAX_PATH 4096
+    #endif
 #endif
+
 #ifdef VERSION_YIXIN_BOARD
-#include <chrono>
-#include <thread>
-#include <mutex>
+    #include <chrono>
+    #include <thread>
+    #include <mutex>
+    std::mutex mtx;
 #endif
 
 using namespace std;
 
-#ifdef VERSION_YIXIN_BOARD
-mutex mtx;
-#endif
 bool thinking = false;
 string configPath;
 
 string getDefaultConfigPath() {
-	char exeFullPath[MAX_PATH]; // Full path
-	GetModuleFileName(NULL, exeFullPath, MAX_PATH);
-	string strPath(exeFullPath);    // Get full path of the file
-	size_t pos = strPath.find_last_of('\\', strPath.length());
-	string path = strPath.substr(0, pos);  // Return the directory without the file name
-	return path + "\\config";
+    char exeFullPath[MAX_PATH];
+
+#ifdef _WIN32
+    GetModuleFileName(NULL, exeFullPath, MAX_PATH);
+    string strPath(exeFullPath);
+    size_t pos = strPath.find_last_of('\\');
+    return strPath.substr(0, pos) + "\\config";
+#else
+    ssize_t count = readlink("/proc/self/exe", exeFullPath, MAX_PATH - 1);
+    if (count != -1) {
+        exeFullPath[count] = '\0';
+    } else {
+        strcpy(exeFullPath, "./");
+    }
+    string strPath(exeFullPath);
+    size_t pos = strPath.find_last_of('/');
+    return strPath.substr(0, pos) + "/config";
+#endif
 }
 
 void thinkMove(AI * ai) {
-	thinking = true;
-	if (ai->shouldReloadConfig())
-		ai->tryReadConfig(configPath);
-	Pos best = ai->turnMove();
-	ai->makeMove(best);
-	cout << int(CoordX(best)) << "," << int(CoordY(best)) << endl;
-	thinking = false;
+    thinking = true;
+    if (ai->shouldReloadConfig())
+        ai->tryReadConfig(configPath);
+    Pos best = ai->turnMove();
+    ai->makeMove(best);
+    cout << int(CoordX(best)) << "," << int(CoordY(best)) << endl;
+    thinking = false;
 }
 
 void pipeLoop() {
