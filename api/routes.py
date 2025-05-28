@@ -18,12 +18,7 @@ router = APIRouter()
 
 
 def get_ai_executable_command(exe_path: str) -> List[str]:
-    """Get the appropriate command to run the AI executable based on the platform."""
-    if platform.system() == "Windows":
-        return [exe_path]
-    else:
-        # On Linux/Unix, use Wine to run Windows executables
-        return ["wine", exe_path]
+    return [exe_path]
 
 
 @router.get("/")
