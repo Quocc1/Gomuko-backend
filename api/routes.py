@@ -1,4 +1,5 @@
 import os
+import platform
 import subprocess
 import threading
 import time
@@ -14,6 +15,15 @@ from schemas.room import RoomSchema
 from services.room import room_service
 
 router = APIRouter()
+
+
+def get_ai_executable_command(exe_path: str) -> List[str]:
+    """Get the appropriate command to run the AI executable based on the platform."""
+    if platform.system() == "Windows":
+        return [exe_path]
+    else:
+        # On Linux/Unix, use Wine to run Windows executables
+        return ["wine", exe_path]
 
 
 @router.get("/")
@@ -92,7 +102,7 @@ async def delete_room_endpoint(
 
 _ai_games = {}
 _ai_games_lock = threading.Lock()
-INACTIVITY_TIMEOUT = 600  # 10 minutes
+INACTIVITY_TIMEOUT = 300  # 5 minutes
 
 
 def _cleanup_inactive_games():
@@ -137,8 +147,11 @@ async def get_ai_move_endpoint(request: AIMoveRequest) -> AIMoveResponse:
 
     if not game_id:
         current_dir = os.path.dirname(os.path.abspath(__file__))
+        exe_path = os.path.join(current_dir, "ai/pbrain-rapfi")
+        ai_command = get_ai_executable_command(exe_path)
+
         proc = subprocess.Popen(
-            [os.path.join(current_dir, "gomoku_ai")],
+            ai_command,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
