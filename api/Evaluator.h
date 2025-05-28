@@ -152,6 +152,4 @@ public:
 	Pos getHighestScoreCandPos();
 	Pos databaseMove();
 
-	// for debug
-	void trace(ostream & ss, const string & appendBefore = "");
 };

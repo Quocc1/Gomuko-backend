@@ -7,6 +7,7 @@
 #endif
 #include <algorithm>
 using std::reverse;
+#include <cstring>
 
 Pattern Evaluator::PATTERN[256][256];
 PatternCode Evaluator::PCODE[16][16][16][16];
@@ -561,7 +562,6 @@ Pos Evaluator::getCostPosAgainstB4(Pos posB4, Piece piece) {
 		break;
 	}
 	MESSAGEL("ERROR!");
-	trace(cout, "MESSAGE ");
 	assert(false);
 	return findPosByPattern4(piece, A_FIVE);
 }
@@ -835,112 +835,3 @@ Pos Evaluator::databaseMove() {
 	}
 	return NullPos;
 }
-
-void Evaluator::trace(ostream & ss, const string & appendBefore) {
-#define SET_COLOR(CCODE) SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), CCODE)
-	int bg = 0;
-	ss << appendBefore;
-	if (board->getMoveCount() > 0) ss << "LastPos:" << PosStr(board->getLastMove()) << endl << appendBefore;
-	FOR_EVERY_POSITION(x, y) {
-		if (x != 0 || y != 0) ss << " ";
-		if (y == 0 && x != 0) ss << endl << appendBefore;
-		if (board->isEmpty(POS(x, y))) {
-			if (cell(x, y).isLose) {
-				ss << "L";
-			} else {
-				if (cell(x, y).isCand()) ss << '*';
-				else ss << '.';
-			}
-		} else {
-			if (board->getLastMove() == POS(x, y))
-				bg = BACKGROUND_INTENSITY;
-			switch (board->get(POS(x, y))) {
-			case Black: SET_COLOR(bg | FOREGROUND_RED); ss << 'X'; break;
-			case White: SET_COLOR(bg | FOREGROUND_GREEN); ss << 'O'; break;
-			case Empty: SET_COLOR(bg | 7); ss << '.'; break;
-			default: break;
-			}
-			bg = 0;
-			SET_COLOR(bg | 7);
-		}
-		if (y == board->size() - 1) ss << " " << x + 1;
-	}
-	ss << endl << appendBefore;
-	for (int y = 0; y < board->size(); y++) {
-		ss << char(y + 65) << " ";
-	}
-	ss << endl << appendBefore << "---Score-------------" << endl << appendBefore;
-	FOR_EVERY_POSITION(x, y) {
-		if (y == 0 && x != 0) ss << endl << appendBefore;
-		if (board->isEmpty(POS(x, y))) {
-			if (cell(x, y).isCand()) ss << std::setw(5) << cell(x, y).getScore();
-			else ss << "    .";
-		} else {
-			ss << "    ";
-			switch (board->get(POS(x, y))) {
-			case Black: SET_COLOR(FOREGROUND_RED); ss << 'X'; break;
-			case White: SET_COLOR(FOREGROUND_GREEN); ss << 'O'; break;
-			case Empty: SET_COLOR(7); ss << '.'; break;
-			default: break;
-			}
-			SET_COLOR(7);
-		}
-	}
-	ss << endl << appendBefore << "---Pattern4--Black------" << endl << appendBefore;
-	FOR_EVERY_POSITION(x, y) {
-		if (x != 0 || y != 0) ss << " ";
-		if (y == 0 && x != 0) ss << endl << appendBefore;
-		switch (board->get(POS(x, y))) {
-		case Black: SET_COLOR(FOREGROUND_RED); break;
-		case White: SET_COLOR(FOREGROUND_GREEN); break;
-		case Empty: SET_COLOR(7); break;
-		default: break;
-		}
-		if (board->isEmpty(POS(x, y))) {
-			switch (cell(x, y).pattern4[Black]) {
-			case A_FIVE: ss << 'A'; break;
-			case B_FLEX4: ss << 'B'; break;
-			case C_BLOCK4_FLEX3: ss << 'C'; break;
-			case D_BLOCK4_PLUS: ss << 'D'; break;
-			case E_BLOCK4: ss << 'E'; break;
-			case F_FLEX3_2X: ss << 'F'; break;
-			case G_FLEX3_PLUS: ss << 'G'; break;
-			case H_FLEX3: ss << 'H'; break;
-			case I_BLOCK3_PLUS: ss << 'I'; break;
-			default: ss << '.'; break;
-			}
-		} else
-			ss << '.';
-		SET_COLOR(7);
-	}
-	ss << endl << appendBefore << "---Pattern4--White------" << endl << appendBefore;
-	FOR_EVERY_POSITION(x, y) {
-		if (x != 0 || y != 0) ss << " ";
-		if (y == 0 && x != 0) ss << endl << appendBefore;
-		switch (board->get(POS(x, y))) {
-		case Black: SET_COLOR(FOREGROUND_RED); break;
-		case White: SET_COLOR(FOREGROUND_GREEN); break;
-		case Empty: SET_COLOR(7); break;
-		default: break;
-		}
-		if (board->isEmpty(POS(x, y))) {
-			switch (cell(x, y).pattern4[White]) {
-			case A_FIVE: ss << 'A'; break;
-			case B_FLEX4: ss << 'B'; break;
-			case C_BLOCK4_FLEX3: ss << 'C'; break;
-			case D_BLOCK4_PLUS: ss << 'D'; break;
-			case E_BLOCK4: ss << 'E'; break;
-			case F_FLEX3_2X: ss << 'F'; break;
-			case G_FLEX3_PLUS: ss << 'G'; break;
-			case H_FLEX3: ss << 'H'; break;
-			case I_BLOCK3_PLUS: ss << 'I'; break;
-			default: ss << '.'; break;
-			}
-		} else
-			ss << '.';
-		SET_COLOR(7);
-	}
-	ss << endl << appendBefore;
-	ss << "===============================" << endl;
-}
-

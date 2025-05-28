@@ -265,7 +265,6 @@ int main(int argc, char* argv[]) {
 	ai.tryReadConfig(configPath);
 	cout << "Initial Time: " << getTime() - time << " ms" << endl;
 	ai.makeMove(POS(board.centerPos(), board.centerPos()));
-	ai.trace(cout);
 	while (true) {
 		Pos p;
 		do {
@@ -276,7 +275,6 @@ int main(int argc, char* argv[]) {
 			case 'R':
 				ai.undoMove();
 				p = NullPos;
-				ai.trace(cout);
 				break;
 			case 'S':
 				p = ai.getHighestScoreCandPos();
@@ -291,13 +289,11 @@ int main(int argc, char* argv[]) {
 			}
 		} while (!board.isEmpty(p));
 		ai.makeMove(p);
-		ai.trace(cout);
 		if (board.checkWin()) {
 			cout << board.getPlayerWon() << "ʤ��!" << endl;
 			break;
 		}
 		ai.makeMove(ai.turnMove());
-		ai.trace(cout);
 		if (board.checkWin()) {
 			cout << board.getPlayerWon() << "ʤ��!" << endl;
 			break;
