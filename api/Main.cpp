@@ -1,6 +1,8 @@
 #include "Search.h"
 #include <sstream>
+#ifdef _WIN32
 #include <windows.h>
+#endif
 #ifdef VERSION_YIXIN_BOARD
 #include <chrono>
 #include <thread>
