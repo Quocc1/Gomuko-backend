@@ -4,6 +4,8 @@ import subprocess
 import threading
 import time
 import uuid
+import select
+import sys
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -176,15 +178,69 @@ async def get_ai_move_endpoint(request: AIMoveRequest) -> AIMoveResponse:
             if proc.stdin:
                 proc.stdin.write(command + "\n")
                 proc.stdin.flush()
+                print(f"Sent command: {command}")
+
+            # Wait for response with timeout
+            response = None
+            timeout = 10  # 10 seconds timeout
+            start_time = time.time()
+
             while True:
+                if time.time() - start_time > timeout:
+                    raise HTTPException(
+                        status_code=504,
+                        detail=f"AI process timeout after {timeout} seconds",
+                    )
+
                 if proc.stdout:
-                    response = proc.stdout.readline().strip()
-                    if not response or response.startswith("MESSAGE"):
-                        continue
-                    break
+                    try:
+                        # Use poll to check if data is available
+                        if sys.platform != "win32":
+                            import select
+
+                            ready, _, _ = select.select([proc.stdout], [], [], 0.1)
+                            if not ready:
+                                continue
+
+                        line = proc.stdout.readline().strip()
+                        print(f"Received from AI: '{line}'")
+
+                        if line:
+                            # For INFO commands, any response is valid
+                            if command.startswith("INFO"):
+                                response = line
+                                break
+                            # For other commands, skip MESSAGE lines
+                            elif not line.startswith("MESSAGE"):
+                                response = line
+                                break
+
+                        # Check if process died
+                        if proc.poll() is not None:
+                            stderr_output = (
+                                proc.stderr.read() if proc.stderr else "No stderr"
+                            )
+                            raise HTTPException(
+                                status_code=500,
+                                detail=f"AI process died. Stderr: {stderr_output}",
+                            )
+
+                    except Exception as e:
+                        print(f"Error reading from AI process: {e}")
+                        raise HTTPException(
+                            status_code=500,
+                            detail=f"Error reading from AI process: {e}",
+                        )
+
         except Exception as e:
+            print(f"AI communication error: {e}")
             raise HTTPException(
                 status_code=500, detail=f"AI process communication error: {e}"
             )
+
+    if response is None:
+        response = "OK"  # Default response for commands that don't return data
+
+    print(f"Response: {response}, game_id: {game_id}")
 
     return AIMoveResponse(game_id=game_id, move=response)

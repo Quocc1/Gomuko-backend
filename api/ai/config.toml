@@ -13,7 +13,7 @@ clear_hash_after_config_loaded = false
 default_thread_num = 1
 
 # Output message mode (Options are [normal, brief, ucilike, none])
-message_mode = "normal"
+message_mode = "ucilike"
 
 # Coordinate convertion mode (Options are [none, X_flipY, flipY_X])
 # For Piskvork, choose "none".
@@ -36,7 +36,7 @@ binary_file = "model210901.bin"
 
 [model.evaluator]
 # Type of the evaluator (Options are [mix9nnue, mix9litennue, mix9svqnnue])
-type = "mix9svqnnue"
+type = "mix9litennue"
 
 # The winning rate of black when the game is a draw, in [0, 1] (default is 0.5).
 draw_black_winrate = 0.5
@@ -67,15 +67,15 @@ weight_file_white = "mix9svqrenju_bs15_white.bin.lz4"
 # weight_file_white = "mix9renju_bs15_white.bin.lz4"
 
 # For mix9litennue
-# [[model.evaluator.weights]]
-# weight_file = "mix9litefreestyle_bs15.bin.lz4"
-# [[model.evaluator.weights]]
-# weight_file = "mix9litefreestyle_bsmix.bin.lz4"
-# [[model.evaluator.weights]]
-# weight_file = "mix9litestandard_bs15.bin.lz4"
-# [[model.evaluator.weights]]
-# weight_file_black = "mix9literenju_bs15_black.bin.lz4"
-# weight_file_white = "mix9literenju_bs15_white.bin.lz4"
+[[model.evaluator.weights]]
+weight_file = "mix9litefreestyle_bs15.bin.lz4"
+[[model.evaluator.weights]]
+weight_file = "mix9litefreestyle_bsmix.bin.lz4"
+[[model.evaluator.weights]]
+weight_file = "mix9litestandard_bs15.bin.lz4"
+[[model.evaluator.weights]]
+weight_file_black = "mix9literenju_bs15_black.bin.lz4"
+weight_file_white = "mix9literenju_bs15_white.bin.lz4"
 
 
 [search]

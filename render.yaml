@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: gomoku-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: oregon
+    branch: main
+    healthCheckPath: /api/
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: 1
+    buildCommand: ""
+    startCommand: "" 
