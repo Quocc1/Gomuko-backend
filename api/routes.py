@@ -18,6 +18,7 @@ router = APIRouter()
 
 
 def get_ai_executable_command(exe_path: str) -> List[str]:
+    """Get the command to run the AI executable."""
     return [exe_path]
 
 
@@ -142,7 +143,7 @@ async def get_ai_move_endpoint(request: AIMoveRequest) -> AIMoveResponse:
 
     if not game_id:
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        exe_path = os.path.join(current_dir, "ai/pbrain-rapfi")
+        exe_path = os.path.join(current_dir, "ai", "pbrain-rapfi")
         ai_command = get_ai_executable_command(exe_path)
 
         proc = subprocess.Popen(
